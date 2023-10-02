@@ -1,3 +1,29 @@
 <resources>
     <string name="app_name">GeoGuess</string>
+
+    <string name="mapbox_access_token">pk.eyJ1IjoiZ2lhbGx1NCIsImEiOiJjbG40aGx0bWkwMGx6MnVxbWJqMjVmZ283In0.QoVREiZMGzWTmFeNZyA5Pw</string>
+
+    <string name="game_description">Ready to test your geography knowledge?</string>
+    <string name="single_player_game_textview">Single Player Game</string>
+    <string name="single_player_game_textview_contentdesc">Select to start a Single Player Game</string>
+    <string name="single_player_game">Single player game</string>
+    <string name="single_player_image_contentdesc">Single Player Logo</string>
+    <string name="two_player_game">Two player game</string>
+    <string name="two_player_image_contentdesc">Two Player Logo</string>
+
+    <string name="dialog_title">Enter players\' names</string>
+    <string name="dialog_positive_button">Let\'s play!</string>
+    <string name="player_one_name_editText_in_dialog">Player 1 name</string>
+    <string name="player_two_name_editText_in_dialog">Player 2 name</string>
+
+    <string name="location_to_guess">City to guess: %1$s</string>
+    <string name="default_player_one_name">Player 1</string>
+    <string name="default_player_two_name">Player 2</string>
+    <string name="player_one_points">%1$s: %2$d %3$s</string>
+    <string name="player_two_points">%1$s: %2$d %3$s</string>
+    <string name="points">points</string>
+    <string name="player_guess_distance">Your guess was %1$s kilometers away</string>
+    <string name="player_two_turn_to_guess">%1$s\'s turn to guess</string>
+    <string name="winner_announcement">%1$s wins!</string>
+
 </resources>
