@@ -1,7 +1,6 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    //id("com.google.gms.google-services")
 }
 
 android {
@@ -66,7 +65,6 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
-
     implementation("com.mapbox.mapboxsdk:mapbox-android-sdk:9.7.1")
     implementation("com.mapbox.mapboxsdk:mapbox-sdk-services:5.8.0")
     implementation("com.mapbox.mapboxsdk:mapbox-sdk-turf:5.8.0")
@@ -81,6 +79,10 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+
 
 
 
