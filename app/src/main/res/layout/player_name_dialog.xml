@@ -19,12 +19,13 @@
 
     <EditText
         android:id="@+id/player_one_editText_name"
-        android:layout_width="378dp"
+        android:layout_width="270dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="0dp"
         android:layout_marginEnd="16dp"
         android:importantForAutofill="no"
         android:inputType="text"
+        android:maxLength="10"
         android:minHeight="48dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -43,12 +44,12 @@
 
     <EditText
         android:id="@+id/player_two_editText_name"
-        android:layout_width="0dp"
+        android:layout_width="270dp"
         android:layout_height="wrap_content"
         android:importantForAutofill="no"
         android:inputType="text"
+        android:maxLength="10"
         android:minHeight="48dp"
-        android:ems="10"
         app:layout_constraintEnd_toEndOf="@+id/player_one_editText_name"
         app:layout_constraintStart_toStartOf="@+id/player_one_textview"
         app:layout_constraintTop_toBottomOf="@+id/player_two_textview"

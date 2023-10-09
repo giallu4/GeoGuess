@@ -41,6 +41,17 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         val signInButton:com.google.android.gms.common.SignInButton = findViewById(R.id.google_sign_in)
         signInButton.setOnClickListener(this)
 
+        val toProfileButton:TextView = findViewById(R.id.user_name)
+        toProfileButton.setOnClickListener {
+            val intent = Intent(applicationContext, ProfileActivity::class.java)
+            startActivity(intent)
+        }
+
+        val toProfileButtonTwo:ImageView = findViewById((R.id.user_icon))
+        toProfileButtonTwo.setOnClickListener {
+            val intent = Intent(applicationContext, ProfileActivity::class.java)
+            startActivity(intent)
+        }
 
         val singlePlayerButton: androidx.cardview.widget.CardView =
             findViewById(R.id.single_player_button)

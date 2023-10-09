@@ -26,6 +26,7 @@
                 tools:ignore="ImageContrastCheck" />
 
             <TextView
+                android:id="@+id/profile_name_id"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
@@ -66,6 +67,7 @@
                         android:textSize="20sp"></TextView>
 
                     <TextView
+                        android:id="@+id/games_played_id"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:paddingTop="10dp"
@@ -150,6 +152,7 @@
                 android:src="@drawable/mail_icon"
                 tools:ignore="ImageContrastCheck" />
             <TextView
+                android:id="@+id/email_id"
                 android:textStyle="bold"
                 android:layout_gravity="center_vertical"
                 android:layout_width="wrap_content"
