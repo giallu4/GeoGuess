@@ -1,8 +1,5 @@
 package com.application.geoguess
 
-//import androidx.activity.ComponentActivity
-//import androidx.activity.compose.setContent
-
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
@@ -15,6 +12,7 @@ import android.widget.Toast
 import android.widget.ViewSwitcher
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -22,17 +20,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
-
-
-//import androidx.compose.foundation.layout.fillMaxSize
-//import androidx.compose.material3.MaterialTheme
-//import androidx.compose.material3.Surface
-//import androidx.compose.material3.Text
-//import androidx.compose.runtime.Composable
-//import androidx.compose.ui.Modifier
-//import androidx.compose.ui.tooling.preview.Preview
-//import com.application.geoguess.ui.theme.GeoGuessTheme
-
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.io.File
+import java.util.Properties
 
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
@@ -81,6 +72,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             viewswitch.reset()
             viewswitch.showNext()
         } else {
+            currentUserGoogleMail = account.email
+            currentUserGoogleName = account.givenName
+            currentUserGoogleSurname = account.familyName
+            currentUserGoogleID = account.id
+            currentUserGooglePhoto = account.photoUrl
             updateLoginUI()
         }
     }
@@ -119,7 +115,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 1000) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            handleSignInResult(task)
+            lifecycleScope.launch(Dispatchers.Main) {
+                handleSignInResult(task)
+            }
 
         }
     }
@@ -127,12 +125,28 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         try {
             val account = completedTask.getResult(ApiException::class.java)
+            val hashMap = hashMapOf<String, String?>()
+            val prop = Properties()
+
             // Signed in successfully, show authenticated UI.
             currentUserGoogleMail = account.email
             currentUserGoogleName = account.givenName
             currentUserGoogleSurname = account.familyName
             currentUserGoogleID = account.id
             currentUserGooglePhoto = account.photoUrl
+
+            hashMap["Mail"] = currentUserGoogleMail
+            hashMap["Name"] = currentUserGoogleName
+            hashMap["Surname"] = currentUserGoogleSurname
+            hashMap["ID"] = currentUserGoogleID
+            hashMap["photoUrl"] = currentUserGooglePhoto.toString()
+            prop.putAll(hashMap)
+
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                val userFile = File(applicationContext.filesDir, "logged_user_info")
+                prop.store(userFile.bufferedWriter(), null)
+                }
 
             updateLoginUI()
         } catch (e: ApiException) {
@@ -168,5 +182,5 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         userName.invalidate()
         userAvatar.invalidate()
     }
-
 }
+
