@@ -82,6 +82,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.0")
 
     implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation("androidx.activity:activity-ktx:1.3.0")
     implementation("com.github.bumptech.glide:glide:4.16.0")
 
 

@@ -1,17 +1,31 @@
 package com.application.geoguess
 
+//import com.application.geoguess.R
+//import com.application.geoguess.StringConstants
+
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.icu.text.NumberFormat
 import android.os.Build
 import android.os.Bundle
+import android.text.Layout
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.AlignmentSpan
 import android.util.Log
 import android.view.View
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
-//import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import com.application.geoguess.model.City
+import com.application.geoguess.model.Player
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.material.snackbar.Snackbar
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
@@ -26,16 +40,11 @@ import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.plugins.annotation.Symbol
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
-//import com.application.geoguess.R
-//import com.application.geoguess.StringConstants
-import com.application.geoguess.model.City
-import com.application.geoguess.model.Player
 import com.mapbox.turf.TurfMeasurement
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-//import org.w3c.dom.Text
 import java.nio.charset.Charset
 import java.util.Locale.getDefault
 import java.util.Random
@@ -51,6 +60,7 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
     private lateinit var symbolManager: SymbolManager
     private lateinit var playerOne: Player
     private var playerTwo: Player? = null
+    private var distanceBooleanFeature: Boolean = false
     private lateinit var listOfCityFeatures: List<Feature>
     private var textViewFlashingAnimation: Animation = AlphaAnimation(0.0f, 1.0f).apply {
         duration = 100 // Manage the blinking speed here
@@ -84,8 +94,56 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
             playerTwo = Player(intent.getStringExtra(StringConstants.PLAYER_TWO_NAME_KEY)!!)
             displayPlayersPoints()
         }
-        mapView.onCreate(savedInstanceState)
-        mapView.getMapAsync(this)
+
+        // Check Google Play Location service on device & request localization permission
+        val api = GoogleApiAvailability.getInstance()
+        when (val apiCode = api.isGooglePlayServicesAvailable(applicationContext)) {
+            ConnectionResult.SUCCESS -> {
+                val locationPermissionRequest = registerForActivityResult(
+                    ActivityResultContracts.RequestMultiplePermissions()
+                ) { permissions ->
+                    when {
+                        permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
+                            // Precise location access granted.
+                            distanceBooleanFeature = true
+                        }
+                        permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+                            // Only approximate location access granted.
+                            distanceBooleanFeature = true
+                        } else -> {
+                        // No location access granted.
+                        val text = "Permission Denied: some features won't work as intended!"
+                        val centeredText: Spannable = SpannableString(text)
+                        centeredText.setSpan(
+                            AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER),
+                            0, text.length - 1,
+                            Spannable.SPAN_INCLUSIVE_INCLUSIVE
+                        )
+                        Toast.makeText(applicationContext, centeredText, Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+
+                if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_DENIED) {
+                    locationPermissionRequest.launch(arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION))
+                } else {
+                    distanceBooleanFeature = true
+                }
+
+            }
+            ConnectionResult.SERVICE_MISSING, ConnectionResult.SERVICE_UPDATING, ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED, ConnectionResult.SERVICE_DISABLED -> {
+                api.getErrorDialog(this, apiCode, 100)?.show()
+            }
+            else -> {
+                Toast.makeText(applicationContext, "There is an error with Google API", Toast.LENGTH_LONG).show()
+            }
+        }
+
+            mapView.onCreate(savedInstanceState)
+            mapView.getMapAsync(this)
+
     }
 
     override fun onMapReady(mapboxMap: MapboxMap) {
