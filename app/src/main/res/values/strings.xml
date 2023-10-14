@@ -26,7 +26,7 @@
     <string name="player_two_turn_to_guess">%1$s\'s turn to guess</string>
     <string name="winner_announcement">%1$s wins!</string>
 
-    <string name="logged_user_name">%1$s %2$s</string>
+    <string name="logged_user_name"><u>%1$s %2$s</u></string>
 
     <string name="user_name_surname">nome cognome</string>
     <string name="logout_text">Logout</string>
@@ -37,7 +37,7 @@
     <string name="total_kilometres_label">Total Kilometres</string>
     <string name="total_kilometres_number">1.000.0000</string>
     <string name="email_value">email@gmail.com</string>
-    <string name="phone_number">3339199999</string>
+    <string name="id_code">000001</string>
 
 
 </resources>

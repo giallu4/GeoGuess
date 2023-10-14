@@ -17,13 +17,36 @@
             android:orientation="vertical">
 
             <ImageView
+                android:id="@+id/back_arrow_id"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:layout_marginHorizontal="10dp"
+                android:layout_marginVertical="10dp"
+                android:clickable="true"
+                android:importantForAccessibility="no"
+                android:soundEffectsEnabled="false"
+                android:src="@drawable/back_arrow"
+                tools:ignore="ImageContrastCheck,TouchTargetSizeCheck"
+                android:focusable="true"></ImageView>
+
+            <androidx.cardview.widget.CardView xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
+                android:layout_marginTop="10dp"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="60dp"
-                android:importantForAccessibility="no"
-                android:src="@drawable/user_default_icon"
-                tools:ignore="ImageContrastCheck" />
+                app:cardCornerRadius="50dp">
+
+                <ImageView
+                    android:id="@+id/profile_icon_id"
+                    android:background="@drawable/gradientbackground"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/user_default_icon"
+                    tools:ignore="ImageContrastCheck"/>
+
+            </androidx.cardview.widget.CardView>
+
 
             <TextView
                 android:id="@+id/profile_name_id"
@@ -131,6 +154,12 @@
         </androidx.cardview.widget.CardView>
     </RelativeLayout>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="POVA"
+        ></TextView>
+
     <LinearLayout
         android:layout_width="360dp"
         android:layout_height="wrap_content"
@@ -146,14 +175,43 @@
             tools:ignore="UseCompoundDrawables">
 
             <ImageView
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/id_icon"
+                tools:ignore="ImageContrastCheck" />
+            <TextView
+                android:id="@+id/id_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="17sp"
+                android:layout_gravity="center_vertical"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:text="@string/id_code"
+                android:textStyle="bold"></TextView>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_marginTop="25dp"
+            android:orientation="horizontal"
+            android:paddingLeft="25dp"
+            android:paddingRight="25dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:ignore="UseCompoundDrawables">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:importantForAccessibility="no"
                 android:src="@drawable/mail_icon"
                 tools:ignore="ImageContrastCheck" />
+
             <TextView
                 android:id="@+id/email_id"
                 android:textStyle="bold"
+                android:textSize="17sp"
                 android:layout_gravity="center_vertical"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -173,39 +231,14 @@
             tools:ignore="UseCompoundDrawables">
 
             <ImageView
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:importantForAccessibility="no"
-                android:src="@drawable/phone_icon"
-                tools:ignore="ImageContrastCheck" />
-            <TextView
-                android:textStyle="bold"
-                android:layout_gravity="center_vertical"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingStart="20dp"
-                android:paddingEnd="20dp"
-                android:text="@string/phone_number">
-            </TextView>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_marginTop="25dp"
-            android:orientation="horizontal"
-            android:paddingLeft="25dp"
-            android:paddingRight="25dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:ignore="UseCompoundDrawables">
-
-            <ImageView
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:importantForAccessibility="no"
                 android:src="@drawable/mail_icon"
                 tools:ignore="ImageContrastCheck" />
             <TextView
                 android:textStyle="bold"
+                android:textSize="17sp"
                 android:layout_gravity="center_vertical"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

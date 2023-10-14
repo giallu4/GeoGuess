@@ -54,6 +54,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:text="@string/logged_user_name"
+                android:textStyle="italic"
                 android:clickable="true"
                 android:soundEffectsEnabled="false"
                 android:textColor="@color/black"

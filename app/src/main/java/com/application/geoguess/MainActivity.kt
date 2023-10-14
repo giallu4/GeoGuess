@@ -2,6 +2,8 @@ package com.application.geoguess
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
@@ -14,6 +16,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -33,6 +38,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private var currentUserGoogleSurname:String? = null
     private var currentUserGoogleID:String? = null
     private var currentUserGooglePhoto:Uri? = null
+    private var currentUserGooglePhotoBitmap:Bitmap? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -150,7 +156,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             hashMap["Name"] = currentUserGoogleName
             hashMap["Surname"] = currentUserGoogleSurname
             hashMap["ID"] = currentUserGoogleID
-            hashMap["photoUrl"] = currentUserGooglePhoto.toString()
+            hashMap["Url"] = currentUserGooglePhoto.toString()
             prop.putAll(hashMap)
 
 
@@ -176,12 +182,21 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         viewswitch.showNext()
         Glide.with(this)
-            .load(currentUserGooglePhoto) // image url
-            .placeholder(R.drawable.user_default_icon) // any placeholder to load at start
-            .error(R.drawable.ic_two_people_white_24dp)  // any image in case of error
-            //.override(200, 200) // resizing
-            .centerCrop()
-            .into(userAvatar)  // imageview object
+            .asBitmap()
+            .load(currentUserGooglePhoto)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .into(object : CustomTarget<Bitmap?>() {
+                override fun onResourceReady(
+                    resource: Bitmap,
+                    transition: Transition<in Bitmap?>?
+                ) {
+                    currentUserGooglePhotoBitmap = resource
+                    userAvatar.setImageBitmap(currentUserGooglePhotoBitmap)
+                }
+
+                override fun onLoadCleared(placeholder: Drawable?) {}
+            })
+
         if (currentUserGoogleName != null && currentUserGoogleSurname != null){
             userName.setText("Hi! " +currentUserGoogleName+" "+currentUserGoogleSurname)
         } else if (currentUserGoogleName != null){
