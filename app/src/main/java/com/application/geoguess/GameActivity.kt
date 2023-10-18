@@ -1,14 +1,17 @@
 package com.application.geoguess
 
-//import com.application.geoguess.R
-//import com.application.geoguess.StringConstants
+
 
 import android.Manifest
+import com.application.geoguess.R
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.icu.text.NumberFormat
+import android.location.Location
 import android.os.Build
 import android.os.Bundle
+import android.os.Looper
 import android.text.Layout
 import android.text.Spannable
 import android.text.SpannableString
@@ -27,6 +30,10 @@ import com.application.geoguess.model.Player
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.material.snackbar.Snackbar
+import com.mapbox.android.core.location.LocationEngine
+import com.mapbox.android.core.location.LocationEngineCallback
+import com.mapbox.android.core.location.LocationEngineRequest
+import com.mapbox.android.core.location.LocationEngineResult
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.Point
@@ -34,58 +41,78 @@ import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.geometry.LatLngBounds
+import com.mapbox.mapboxsdk.location.LocationComponent
+import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
+import com.mapbox.mapboxsdk.location.modes.CameraMode
+import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.plugins.annotation.Symbol
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
+import com.mapbox.mapboxsdk.plugins.annotation.Line
+import com.mapbox.mapboxsdk.plugins.annotation.LineManager
+import com.mapbox.mapboxsdk.plugins.annotation.LineOptions
 import com.mapbox.turf.TurfMeasurement
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.nio.charset.Charset
 import java.util.Locale.getDefault
 import java.util.Random
 
 
-open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnMapClickListener {
+open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnMapClickListener,
+    LocationEngineCallback<LocationEngineResult> {
     private var mapboxMap: MapboxMap? = null
+    private var userLocation: Location? = null
+    private var engine: LocationEngine? = null
+    private var locComponent: LocationComponent? = null
+    private var userIconSymbol: Symbol? = null
     private var currentCityToGuess: City? = null
     private var isSinglePlayerGame = false
     private var playerOneSymbol: Symbol? = null
     private var playerTwoSymbol: Symbol? = null
     private var bullsEyeSymbol: Symbol? = null
     private lateinit var symbolManager: SymbolManager
+    private lateinit var lineManager: LineManager
+    private lateinit var line: Line
     private lateinit var playerOne: Player
     private var playerTwo: Player? = null
     private var distanceBooleanFeature: Boolean = false
     private lateinit var listOfCityFeatures: List<Feature>
-    private var textViewFlashingAnimation: Animation = AlphaAnimation(0.0f, 1.0f).apply {
-        duration = 100 // Manage the blinking speed here
+    /*private var textViewFlashingAnimation: Animation = AlphaAnimation(0.0f, 1.0f).apply {
+        duration = 100
         startOffset = 1
         repeatMode = Animation.REVERSE
         repeatCount = 8
+    }*/
+    private var textViewFlashingAnimationTwo: Animation = AlphaAnimation(0.0f, 1.0f).apply {
+        duration = 500
+        startOffset = 1
+        repeatMode = Animation.REVERSE
+        repeatCount = 4
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Mapbox access token is configured here. This needs to be called either in your application
-        // object or in the same activity which contains the MapView.
+        // Mapbox access token
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token))
 
-        // This contains the mapView in XML and needs to be called after the access token is configured.
+
         setContentView(R.layout.game_activity_layout)
         val playerOnePointsTextView: TextView = findViewById(R.id.player_one_points_textID)
         val playerTwoPointsTextView: TextView = findViewById(R.id.player_two_points_textID)
         val mapView: com.mapbox.mapboxsdk.maps.MapView = findViewById(R.id.mapView_textID)
 
-        // Determine whether a one or two person game was selected in the previous activity/screen
+        // One/two Players?
         isSinglePlayerGame = intent?.getStringExtra(StringConstants.TYPE_OF_GAME_KEY) == StringConstants.ONE_PLAYER_GAME
 
-        // Set the visibility of parts of the card view that's on top of the Mapbox map
+        // Handle visibility of players' texts according to single/multi player
         playerOne = Player(intent?.getStringExtra(StringConstants.PLAYER_ONE_NAME_KEY))
 
         if (!isSinglePlayerGame) {
@@ -141,37 +168,40 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
             }
         }
 
-            mapView.onCreate(savedInstanceState)
-            mapView.getMapAsync(this)
+
+        mapView.onCreate(savedInstanceState)
+        mapView.getMapAsync(this)
 
     }
 
     override fun onMapReady(mapboxMap: MapboxMap) {
         val mapView: com.mapbox.mapboxsdk.maps.MapView = findViewById(R.id.mapView_textID)
-        this@GameActivity.mapboxMap = mapboxMap
+        this.mapboxMap = mapboxMap
         mapboxMap.setStyle(Style.Builder().fromUri(Style.MAPBOX_STREETS)
                 .withImage(PLAYER_ONE_ICON_ID, BitmapFactory.decodeResource(this.resources, R.drawable.player_one_icon))
                 .withImage(PLAYER_TWO_ICON_ID, BitmapFactory.decodeResource(this.resources, R.drawable.player_two_icon))
                 .withImage(BULLSEYE_ICON_ID, BitmapFactory.decodeResource(this.resources, R.drawable.target_bullseye_icon))
+                .withImage(HOUSE_ICON_ID, ContextCompat.getDrawable(baseContext, R.drawable.house_icon)!!)
         ) {
             CoroutineScope(context = Dispatchers.Default + Job()).launch {
                 try {
-                    // Use fromJson() method to convert GeoJSON file into a usable FeatureCollection
 
                     val featureCollection = FeatureCollection.fromJson(loadGeoJsonFromAsset("cities.geojson"))
                     listOfCityFeatures = featureCollection.features()!!
 
                     runOnUiThread {
-                        // Retrieve the first city to guess
+
                         setNewRandomCityToGuess()
 
-                        // Set up a SymbolManager instance
+                        // Set up a SymbolManager and LineManager instance
                         symbolManager = SymbolManager(mapView, mapboxMap, it)
                         symbolManager.iconAllowOverlap = true
                         symbolManager.iconIgnorePlacement = true
 
-                        mapboxMap.addOnMapClickListener(this@GameActivity)
+                        lineManager = LineManager(mapView, mapboxMap, it)
 
+                        mapboxMap.addOnMapClickListener(this@GameActivity)
+                        handleUserGPSLocation(it)
                         initAnswerButton()
                     }
                 } catch (exception: Exception) {
@@ -181,17 +211,20 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         }
     }
 
-    /**
-     * Set the onClickListener for the button.
-     */
+
+     // Set the onClickListener for the answer button.
+
     private fun initAnswerButton() {
         val checkAnswerButton: com.google.android.material.floatingactionbutton.FloatingActionButton = findViewById(R.id.check_answer_button)
         checkAnswerButton.setOnClickListener {
             if (isSinglePlayerGame) {
-                Snackbar.make(findViewById(android.R.id.content),
+               Snackbar.make(findViewById(android.R.id.content),
                         resources.getString(R.string.player_guess_distance,
-                                getDistanceBetweenTargetAndGuess(playerOne)),
-                        Snackbar.LENGTH_SHORT).show()
+                                getDistanceBetweenTargetAndGuess(playerOne), currentCityToGuess?.name),
+                        Snackbar.LENGTH_INDEFINITE).show()
+                drawLine(playerOne.selectedLatLng!!, currentCityToGuess!!.latLng!!)
+
+
                 resetUiAfterAnswerDistanceCheck()
                 checkAnswerButton.hide()
             } else {
@@ -210,19 +243,48 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         }
     }
 
-    /**
-     * Reset UI once a city guess round has finished.
-     */
+
+     //Reset UI after round
+
     private fun resetUiAfterAnswerDistanceCheck() {
         setBullsEyeMarker(currentCityToGuess?.latLng!!)
         setCameraBoundsToSelectedAndTargetMarkers()
+
+        if (isSinglePlayerGame){
+            // Wait before launching second Snack-bar/Line/info's
+            CoroutineScope(context = Dispatchers.Main + Job()).launch {
+                val coordinatesOfHome = LatLng(userLocation)
+                delay(7000) //wait
+                val snackBar = Snackbar.make(findViewById(android.R.id.content),
+                    resources.getString(R.string.home_distance_from_city,
+                        getDistanceBetweenHomeAndGuess(playerOne)),
+                    Snackbar.LENGTH_INDEFINITE)
+                snackBar.show()
+
+                lineManager.delete(line)
+                drawLine(playerOne.selectedLatLng!!,coordinatesOfHome)
+
+                // move camera
+
+                val latLngBounds: LatLngBounds =
+                    LatLngBounds.Builder()
+                        .include(playerOne.selectedLatLng!!)
+                        .include(coordinatesOfHome)
+                        .build()
+
+                mapboxMap?.easeCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds,
+                    CAMERA_BOUNDS_PADDING), EASE_CAMERA_SPEED_IN_MS_SLOWER)
+                delay(7000) //wait
+                snackBar.dismiss()
+                lineManager.deleteAll()
+            }
+        }
+
         setNewRandomCityToGuess()
     }
 
-    /**
-     * Process the onMapClick logic based on whether it's a multi-player
-     * game and who already guessed.
-     */
+
+
     override fun onMapClick(mapClickPoint: LatLng): Boolean {
         val checkAnswerButton: com.google.android.material.floatingactionbutton.FloatingActionButton = findViewById(R.id.check_answer_button)
         if (isSinglePlayerGame) {
@@ -241,9 +303,9 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         return true
     }
 
-    /**
-     * Create/adjust the first player's guess icon.
-     */
+
+      // Adjust the first player's guess icon
+
     private fun setPlayerOneMarker(newLatLng: LatLng) {
         if (playerOneSymbol == null) {
             playerOneSymbol = symbolManager.create(SymbolOptions()
@@ -259,9 +321,18 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         }
     }
 
-    /**
-     * Create/adjust the second player's guess icon.
-     */
+    //Draw a line connecting two points
+    private fun drawLine(firstPoint: LatLng, secondPoint: LatLng){
+        line = lineManager.create(LineOptions()
+            .withLatLngs(listOf(firstPoint,secondPoint))
+            .withDraggable(false)
+            .withLineColor("#FF4081")
+        )
+
+    }
+
+    // Adjust the second player's guess icon
+
     private fun setPlayerTwoMarker(newLatLng: LatLng) {
         if (playerTwoSymbol == null) {
             playerTwoSymbol = symbolManager.create(SymbolOptions()
@@ -277,9 +348,9 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         }
     }
 
-    /**
-     * Create/adjust the target city icon.
-     */
+
+     // Create/adjust the target city icon
+
     private fun setBullsEyeMarker(bullsEyeLocation: LatLng) {
         if (bullsEyeSymbol == null) {
             bullsEyeSymbol = symbolManager.create(SymbolOptions()
@@ -295,9 +366,9 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         }
     }
 
-    /**
-     * Move the map camera to show certain coordinates.
-     */
+
+     // Move the map camera to show certain coordinates.
+
     private fun setCameraBoundsToSelectedAndTargetMarkers() {
         val latLngBounds: LatLngBounds = if (isSinglePlayerGame) {
             LatLngBounds.Builder()
@@ -315,9 +386,9 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
                 CAMERA_BOUNDS_PADDING), EASE_CAMERA_SPEED_IN_MS)
     }
 
-    /**
-     * Retrieve and set a new city as the target city to guess.
-     */
+
+     //Retrieve and set a new city as the target city to guess.
+
     private fun setNewRandomCityToGuess() {
         val locationToGuess: TextView = findViewById(R.id.location_to_guess_textview)
         if (listOfCityFeatures.isNotEmpty()) {
@@ -327,14 +398,15 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
                     LatLng(randomCityAsPoint.latitude(), randomCityAsPoint.longitude())).also {
                 locationToGuess.text = resources.getString(R.string.location_to_guess,
                         it.name)
+                locationToGuess.startAnimation(textViewFlashingAnimationTwo)
             }
         }
     }
 
-    /**
-     * Uses Mapbox's Turf library to get the as-the-crow-flies distance between two
-     * [Point]s.
-     */
+
+     // Mapbox's Turf to get distance between two [Point]s.
+
+    @SuppressLint("ObsoleteSdkInt")
     private fun getDistanceBetweenTargetAndGuess(playerToCheck: Player?): String {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             NumberFormat.getNumberInstance(getDefault()).format(TurfMeasurement.distance(
@@ -351,21 +423,40 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         }
     }
 
-    /**
-     * If it's a multi-player game, calculate which player's guess was closer to the
-     * target city
-     */
+
+    // Mapbox's Turf to get distance between user Home and his target selection
+
+    @SuppressLint("ObsoleteSdkInt")
+    private fun getDistanceBetweenHomeAndGuess(playerToCheck: Player?): String {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            NumberFormat.getNumberInstance(getDefault()).format(TurfMeasurement.distance(
+                Point.fromLngLat(userLocation!!.longitude,
+                    userLocation!!.latitude),
+                Point.fromLngLat(playerToCheck!!.selectedLatLng?.longitude!!,
+                    playerToCheck.selectedLatLng?.latitude!!)))
+        } else {
+            TurfMeasurement.distance(
+                Point.fromLngLat(userLocation!!.longitude,
+                    userLocation!!.latitude),
+                Point.fromLngLat(playerToCheck!!.selectedLatLng?.longitude!!,
+                    playerToCheck.selectedLatLng?.latitude!!)).toString()
+        }
+    }
+
+
+     // Calculate which player's guess was closer to the target city
+
     private fun calculateAndGivePointToWinner() {
-        val playerOnePointsTextView: TextView = findViewById(R.id.player_one_points_textID)
-        val playerTwoPointsTextView: TextView = findViewById(R.id.player_two_points_textID)
+        //val playerOnePointsTextView: TextView = findViewById(R.id.player_one_points_textID)
+        //val playerTwoPointsTextView: TextView = findViewById(R.id.player_two_points_textID)
         when (getDistanceBetweenTargetAndGuess(playerOne) < getDistanceBetweenTargetAndGuess(playerTwo)) {
             true -> {
                 playerOne.points = playerOne.points.plus(1)
-                playerOnePointsTextView.startAnimation(textViewFlashingAnimation)
+                //playerOnePointsTextView.startAnimation(textViewFlashingAnimation)
             }
             false -> {
                 playerTwo?.points = playerTwo?.points!!.plus(1)
-                playerTwoPointsTextView.startAnimation(textViewFlashingAnimation)
+                //playerTwoPointsTextView.startAnimation(textViewFlashingAnimation)
             }
         }
         Snackbar.make(findViewById(android.R.id.content),
@@ -377,9 +468,9 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         displayPlayersPoints()
     }
 
-    /**
-     * Update the players' point [TextView]s.
-     */
+
+     // Update the players' points.
+
     private fun displayPlayersPoints() {
         val playerOnePointsTextView: TextView = findViewById(R.id.player_one_points_textID)
         val playerTwoPointsTextView: TextView = findViewById(R.id.player_two_points_textID)
@@ -391,9 +482,10 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         textView.text = String.format(getString(stringId), playerName, numOfPoints, getString(R.string.points))
     }
 
-    /**
-     * Load the file that has the list of cities to guess from.
-     */
+
+    // load the GeoJSON file function
+
+    @Suppress("SameParameterValue")
     private fun loadGeoJsonFromAsset(filename: String): String {
         return try {
             // Load GeoJSON file from local asset folder
@@ -408,7 +500,30 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         }
     }
 
-    // region activity lifecycle method overrides
+    private fun handleUserGPSLocation(mapStyle:Style) {
+        // With location permissions, if single player THEN retrieve the user location
+        if (isSinglePlayerGame && ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED ) {
+
+            if (locComponent == null) {
+                locComponent = mapboxMap!!.locationComponent
+                val options = LocationComponentActivationOptions
+                    .Builder(baseContext, mapStyle)
+                    .build()
+                locComponent!!.activateLocationComponent(options)
+                locComponent!!.setLocationComponentEnabled(true)
+                locComponent!!.setCameraMode(CameraMode.TRACKING_GPS)
+                locComponent!!.setRenderMode(RenderMode.GPS)
+            }
+
+            //if ( userLocation == null){           really needed? Maybe to improve performance...
+                engine = locComponent!!.locationEngine
+                engine?.requestLocationUpdates(LocationEngineRequest.Builder(5000).build(),this,
+                    Looper.getMainLooper())
+            //}
+
+        }
+    }
+
     public override fun onResume() {
         super.onResume()
         val mapView: com.mapbox.mapboxsdk.maps.MapView = findViewById(R.id.mapView_textID)
@@ -439,6 +554,15 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         mapView.onLowMemory()
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        handleUserGPSLocation(mapboxMap?.style!!)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         val mapView: com.mapbox.mapboxsdk.maps.MapView = findViewById(R.id.mapView_textID)
@@ -449,17 +573,44 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         val mapView: com.mapbox.mapboxsdk.maps.MapView = findViewById(R.id.mapView_textID)
+        symbolManager.deleteAll()
+        userIconSymbol = null
+        lineManager.deleteAll()
         mapView.onSaveInstanceState(outState)
-    } //endregion
+    }
 
     companion object {
         private const val CAMERA_BOUNDS_PADDING = 190
         private const val EASE_CAMERA_SPEED_IN_MS = 1000
+        private const val EASE_CAMERA_SPEED_IN_MS_SLOWER = 2000
         private const val FEATURE_CITY_PROPERTY_KEY = "city"
         private const val ICON_SIZE = 1.2f
         private const val PLAYER_ONE_ICON_ID = "PLAYER_ONE_ICON_ID"
         private const val PLAYER_TWO_ICON_ID = "PLAYER_TWO_ICON_ID"
         private const val BULLSEYE_ICON_ID = "BULLSEYE_ICON_ID"
+        private const val HOUSE_ICON_ID = "HOUSE_ICON_ID"
         private const val TAG = "GameActivity"
+    }
+
+    @SuppressLint("MissingPermission")
+    override fun onSuccess(p0: LocationEngineResult?) {
+            userLocation = p0?.lastLocation
+
+            if (userIconSymbol == null) {
+                userIconSymbol = symbolManager.create(
+                    SymbolOptions()
+                        .withLatLng(LatLng(userLocation))
+                        .withIconImage(HOUSE_ICON_ID)
+                        .withIconSize(ICON_SIZE)
+                        .withDraggable(false)
+                )
+            }
+
+        engine?.removeLocationUpdates(this)
+        locComponent!!.setLocationComponentEnabled(false)
+    }
+
+    override fun onFailure(p0: java.lang.Exception) {
+        Log.d("ErrorLocation", "Error on retrieving the position")
     }
 }

@@ -22,11 +22,12 @@
     <string name="player_one_points">%1$s: %2$d %3$s</string>
     <string name="player_two_points">%1$s: %2$d %3$s</string>
     <string name="points">points</string>
-    <string name="player_guess_distance">Your guess was %1$s kilometers away</string>
+    <string name="player_guess_distance">Your guess was %1$s kilometers away from %2$s ...</string>
+    <string name="home_distance_from_city">It was also %1$s kilometers away from You!\n If you take off right now, you may still be in time !!</string>
     <string name="player_two_turn_to_guess">%1$s\'s turn to guess</string>
-    <string name="winner_announcement">%1$s wins!</string>
+    <string name="winner_announcement">%1$s wins! Next round begins ...</string>
 
-    <string name="logged_user_name"><u>%1$s %2$s</u></string>
+    <string name="logged_user_name">%1$s %2$s</string>
 
     <string name="user_name_surname">nome cognome</string>
     <string name="logout_text">Logout</string>
