@@ -84,12 +84,12 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
     private var playerTwo: Player? = null
     private var distanceBooleanFeature: Boolean = false
     private lateinit var listOfCityFeatures: List<Feature>
-    /*private var textViewFlashingAnimation: Animation = AlphaAnimation(0.0f, 1.0f).apply {
-        duration = 100
+    private var textViewFlashingAnimation: Animation = AlphaAnimation(0.0f, 1.0f).apply {
+        duration = 500
         startOffset = 1
         repeatMode = Animation.REVERSE
-        repeatCount = 8
-    }*/
+        repeatCount = 16
+    }
     private var textViewFlashingAnimationTwo: Animation = AlphaAnimation(0.0f, 1.0f).apply {
         duration = 500
         startOffset = 1
@@ -395,10 +395,21 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
             val randomCityFromList = listOfCityFeatures[Random().nextInt(listOfCityFeatures.size).plus(1)]
             val randomCityAsPoint = randomCityFromList.geometry() as Point
             currentCityToGuess = City(randomCityFromList.getStringProperty(FEATURE_CITY_PROPERTY_KEY),
-                    LatLng(randomCityAsPoint.latitude(), randomCityAsPoint.longitude())).also {
-                locationToGuess.text = resources.getString(R.string.location_to_guess,
-                        it.name)
-                locationToGuess.startAnimation(textViewFlashingAnimationTwo)
+                    LatLng(randomCityAsPoint.latitude(), randomCityAsPoint.longitude()))
+            locationToGuess.text = "Searching city for next round ..."
+            locationToGuess.startAnimation(textViewFlashingAnimation)
+
+            // wait for animations + user reading of the snack-bars results
+            CoroutineScope(context = Dispatchers.Default + Job()).launch {
+                delay(8000)
+                runOnUiThread(Runnable {
+                    locationToGuess.text = resources.getString(
+                        R.string.location_to_guess,
+                        currentCityToGuess!!.name
+                    )
+                    locationToGuess.startAnimation(textViewFlashingAnimationTwo)
+                })
+
             }
         }
     }
@@ -605,6 +616,15 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
                         .withDraggable(false)
                 )
             }
+
+        val text = "Now I know where you are! " + ("\ud83d\ude0e")
+        val centeredText: Spannable = SpannableString(text)
+        centeredText.setSpan(
+            AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER),
+            0, text.length - 1,
+            Spannable.SPAN_INCLUSIVE_INCLUSIVE
+        )
+        Toast.makeText(applicationContext, centeredText, Toast.LENGTH_LONG).show()
 
         engine?.removeLocationUpdates(this)
         locComponent!!.setLocationComponentEnabled(false)

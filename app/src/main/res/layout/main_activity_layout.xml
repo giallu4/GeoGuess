@@ -60,7 +60,7 @@
                 android:textStyle="italic|bold"
                 android:clickable="true"
                 android:soundEffectsEnabled="false"
-                android:textColor="#987715"
+                android:textColor="#FF9800"
                 android:textSize="20sp"
                 android:focusable="true" />
 

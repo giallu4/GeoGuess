@@ -3,4 +3,11 @@
         <item name="android:background">@color/black_overlay</item>
         <item name="android:buttonBarStyle">?android:attr/buttonBarStyle</item>
     </style>
+
+    <!--<style name="TextAppearanceContextMenu" parent="ThemeOverlay.AppCompat.ActionBar">
+        <item name="titleTextColor">@color/white</item>
+        <item name="actionMenuTextColor">@color/red</item>
+        <item name="android:actionMenuTextColor">@color/red</item>
+    </style>-->
+
 </resources>

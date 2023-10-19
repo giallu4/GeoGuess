@@ -7,6 +7,15 @@
     android:background="@color/graylight"
     android:orientation="vertical">
 
+    <!--<androidx.appcompat.widget.Toolbar
+        android:id="@+id/profile_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:theme="@style/TextAppearanceContextMenu" />-->
+
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="405dp">
@@ -16,7 +25,7 @@
             android:layout_height="350dp"
             android:orientation="vertical">
 
-            <ImageView
+            <!--<ImageView
                 android:id="@+id/back_arrow_id"
                 android:layout_width="45dp"
                 android:layout_height="45dp"
@@ -27,12 +36,12 @@
                 android:soundEffectsEnabled="false"
                 android:src="@drawable/back_arrow"
                 tools:ignore="ImageContrastCheck,TouchTargetSizeCheck"
-                android:focusable="true"></ImageView>
+                android:focusable="true"></ImageView>-->
 
             <androidx.cardview.widget.CardView xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="80dp"
                 android:layout_gravity="center_horizontal"
                 app:cardCornerRadius="50dp">
 
@@ -154,18 +163,12 @@
         </androidx.cardview.widget.CardView>
     </RelativeLayout>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="POVA"
-        ></TextView>
-
     <LinearLayout
         android:layout_width="360dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_gravity="center"
-        android:layout_marginTop="120dp">
+        android:layout_marginTop="60dp">
         <LinearLayout
             android:orientation="horizontal"
             android:paddingLeft="25dp"
@@ -184,7 +187,7 @@
                 android:id="@+id/id_id"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="17sp"
+                android:textSize="18sp"
                 android:layout_gravity="center_vertical"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp"
@@ -211,9 +214,9 @@
             <TextView
                 android:id="@+id/email_id"
                 android:textStyle="bold"
-                android:textSize="17sp"
+                android:textSize="18sp"
                 android:layout_gravity="center_vertical"
-                android:layout_width="wrap_content"
+                android:layout_width="310dp"
                 android:layout_height="wrap_content"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp"
@@ -236,16 +239,16 @@
                 android:importantForAccessibility="no"
                 android:src="@drawable/mail_icon"
                 tools:ignore="ImageContrastCheck" />
+
             <TextView
-                android:textStyle="bold"
-                android:textSize="17sp"
-                android:layout_gravity="center_vertical"
-                android:layout_width="wrap_content"
+                android:layout_width="310dp"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp"
-                android:text="gianluca.pulicati@gmail.com">
-            </TextView>
+                android:text="gianluca.pulicati@gmail.com"
+                android:textSize="18sp"
+                android:textStyle="bold"></TextView>
         </LinearLayout>
 
     </LinearLayout>
@@ -256,7 +259,7 @@
         android:orientation="vertical"
         android:layout_gravity="bottom"
         android:gravity="bottom|center_horizontal"
-        android:paddingBottom="20dp">
+        android:paddingBottom="30dp">
 
         <Button
             android:layout_width="wrap_content"

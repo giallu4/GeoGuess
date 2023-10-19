@@ -7,6 +7,10 @@ import android.graphics.Paint
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
+import android.text.Layout
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.AlignmentSpan
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -227,6 +231,16 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             userName.setText("Hi! -No Name-")
             userName.paintFlags = userName.paintFlags or Paint.UNDERLINE_TEXT_FLAG
         }
+
+        // Confirmation Toast
+        val text = "User successfully logged in"
+        val centeredText: Spannable = SpannableString(text)
+        centeredText.setSpan(
+            AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER),
+            0, text.length - 1,
+            Spannable.SPAN_INCLUSIVE_INCLUSIVE
+        )
+        Toast.makeText(applicationContext, centeredText, Toast.LENGTH_LONG).show()
 
         userName.invalidate()
         userAvatar.invalidate()

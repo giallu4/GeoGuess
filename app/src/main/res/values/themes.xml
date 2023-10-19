@@ -13,10 +13,11 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="Theme.Profile" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+    <style name="Theme.Profile" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/action_bar_main</item>
+        <item name="colorPrimaryDark">@color/action_bar_main</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="titleTextColor">@color/white</item>
     </style>
 
     <style name="ThemeOverlay.GeoGuess.FullscreenContainer" parent="">

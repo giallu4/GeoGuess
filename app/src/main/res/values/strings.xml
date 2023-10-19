@@ -40,5 +40,7 @@
     <string name="email_value">email@gmail.com</string>
     <string name="id_code">000001</string>
 
+    <string name="delete_account">Delete Account</string>
+
 
 </resources>
