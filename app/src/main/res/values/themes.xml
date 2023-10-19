@@ -7,15 +7,16 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="Theme.Main" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/action_bar_main</item>
+        <item name="colorPrimaryDark">@color/action_bar_main</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
     <style name="Theme.Profile" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-    </style>
-    <style name="Theme.GeoGuess.Fullscreen" parent="Theme.GeoGuess">
-        <item name="android:actionBarStyle">@style/Widget.Theme.GeoGuess.ActionBar.Fullscreen</item>
-        <item name="android:windowActionBarOverlay">true</item>
-        <item name="android:windowBackground">@null</item>
     </style>
 
     <style name="ThemeOverlay.GeoGuess.FullscreenContainer" parent="">

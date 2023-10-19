@@ -3,10 +3,13 @@ package com.application.geoguess
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Paint
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
@@ -59,10 +62,27 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             startActivity(intent)
         }
 
+        // animate the logo
+        val appLogo:ImageView = findViewById(R.id.main_logo)
+        val slideDownAnim: Animation = AnimationUtils.loadAnimation(applicationContext, R.anim.slidedown)
+        slideDownAnim.startOffset = 1000
+        appLogo.startAnimation(slideDownAnim)
+        appLogo.visibility = View.VISIBLE
+
         val singlePlayerButton: androidx.cardview.widget.CardView =
             findViewById(R.id.single_player_button)
+        singlePlayerButton.alpha = 0f
+        singlePlayerButton.setTranslationY(50f);
+        singlePlayerButton.animate().alpha(1f).translationYBy(-50f).setDuration(2000).setStartDelay(1000)
+
+
         val multiPlayerButton: androidx.cardview.widget.CardView =
             findViewById(R.id.multi_player_button)
+        multiPlayerButton.alpha = 0f
+        multiPlayerButton.setTranslationY(50f);
+        multiPlayerButton.animate().alpha(1f).translationYBy(-50f).setDuration(2000).setStartDelay(1000)
+
+
         singlePlayerButton.setOnClickListener {
             val intent = Intent(applicationContext, GameActivity::class.java)
             intent.putExtra(StringConstants.TYPE_OF_GAME_KEY, StringConstants.ONE_PLAYER_GAME)
@@ -83,7 +103,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
 
         // Check for existing Google Sign In account, if the user is already signed in
-        // the GoogleSignInAccount will be non-null. .
+        // the GoogleSignInAccount will be non-null ..
         val account = GoogleSignIn.getLastSignedInAccount(this)
         if (account == null){
             viewswitch.reset()
@@ -199,10 +219,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         if (currentUserGoogleName != null && currentUserGoogleSurname != null){
             userName.setText("Hi! " +currentUserGoogleName+" "+currentUserGoogleSurname)
+            userName.paintFlags = userName.paintFlags or Paint.UNDERLINE_TEXT_FLAG
         } else if (currentUserGoogleName != null){
             userName.setText("Hi! " +currentUserGoogleName)
+            userName.paintFlags = userName.paintFlags or Paint.UNDERLINE_TEXT_FLAG
         } else {
             userName.setText("Hi! -No Name-")
+            userName.paintFlags = userName.paintFlags or Paint.UNDERLINE_TEXT_FLAG
         }
 
         userName.invalidate()

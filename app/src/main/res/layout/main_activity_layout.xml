@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@drawable/mainbackground"
     android:id="@+id/main_activity"
     tools:context=".MainActivity"
     >
@@ -35,7 +36,8 @@
                 android:layout_marginEnd="10dp"
                 android:layout_gravity="center_vertical"
                 app:cardElevation="3dp"
-                app:cardCornerRadius="20dp">
+                app:cardCornerRadius="20dp"
+                app:cardBackgroundColor="@android:color/transparent">
 
             <ImageView
                 android:id="@+id/user_icon"
@@ -44,7 +46,8 @@
                 android:src="@drawable/user_default_icon"
                 android:clickable="true"
                 android:soundEffectsEnabled="false"
-                android:importantForAccessibility="no" />
+                android:importantForAccessibility="no"
+                android:focusable="true" />
 
             </androidx.cardview.widget.CardView>
 
@@ -54,11 +57,12 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:text="@string/logged_user_name"
-                android:textStyle="italic"
+                android:textStyle="italic|bold"
                 android:clickable="true"
                 android:soundEffectsEnabled="false"
-                android:textColor="@color/black"
-                android:textSize="18sp" />
+                android:textColor="#987715"
+                android:textSize="20sp"
+                android:focusable="true" />
 
         </LinearLayout>
 
@@ -66,16 +70,37 @@
 
     </ViewSwitcher>
 
+    <androidx.cardview.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:cardBackgroundColor="@android:color/transparent"
+        android:outlineAmbientShadowColor="@android:color/transparent"
+        android:outlineSpotShadowColor="@android:color/transparent"
+        tools:ignore="UnusedAttribute">
 
+    <ImageView
+        android:id="@+id/main_logo"
+        android:src="@drawable/geoguessmaintitle"
+        android:layout_width="500dp"
+        android:layout_height="wrap_content"
+        android:scaleType="fitXY"
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"
+        android:importantForAccessibility="no"
+        android:visibility="invisible"
+        tools:ignore="VisualLintBounds" />
+
+    </androidx.cardview.widget.CardView>
 
             <TextView
                 android:id="@+id/textView2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="100dp"
+                android:layout_marginBottom="200dp"
                 android:gravity="center_horizontal"
                 android:text="@string/game_description"
                 android:textSize="25sp"
@@ -94,11 +119,21 @@
                 android:focusable="true"
                 android:text="@string/single_player_game_textview"
                 android:contentDescription="@string/single_player_game_textview_contentdesc"
-                app:cardBackgroundColor="@android:color/holo_green_dark"
-                app:cardElevation="3dp"
+                app:cardElevation="50dp"
+                app:cardMaxElevation="100dp"
+                app:cardCornerRadius="500dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/guideline" >
+
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:importantForAccessibility="no"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/gradientbutton"
+                    tools:ignore="ImageContrastCheck" />
 
 
                 <LinearLayout
@@ -115,7 +150,8 @@
                         android:layout_gravity="center_vertical"
                         android:text="@string/single_player_game"
                         android:textColor="@android:color/white"
-                        android:textSize="20sp" />
+                        android:textSize="20sp"
+                        tools:ignore="TextContrastCheck" />
 
                     <ImageView
                         android:id="@+id/single_player_image"
@@ -123,8 +159,9 @@
                         android:layout_height="40dp"
                         android:layout_gravity="center_vertical"
                         android:layout_marginStart="16dp"
+                        android:contentDescription="@string/single_player_image_contentdesc"
                         android:src="@drawable/ic_single_person_white_24dp"
-                        android:contentDescription="@string/single_player_image_contentdesc"/>
+                        tools:ignore="ImageContrastCheck" />
 
                 </LinearLayout>
 
@@ -140,11 +177,21 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:text="@string/single_player_game_textview"
-                app:cardBackgroundColor="@color/mapbox_blue"
-                app:cardElevation="3dp"
+                app:cardElevation="50dp"
+                app:cardMaxElevation="100dp"
+                app:cardCornerRadius="500dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/single_player_button">
+                app:layout_constraintTop_toBottomOf="@+id/single_player_button"
+                tools:ignore="VisualLintBounds">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:importantForAccessibility="no"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/gradientbuttontwo"
+                    tools:ignore="ImageContrastCheck" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -160,7 +207,8 @@
                         android:layout_gravity="center_vertical"
                         android:text="@string/two_player_game"
                         android:textColor="@android:color/white"
-                        android:textSize="20sp" />
+                        android:textSize="20sp"
+                        tools:ignore="TextContrastCheck" />
 
                     <ImageView
                         android:id="@+id/two_player_image"
@@ -168,21 +216,20 @@
                         android:layout_height="40dp"
                         android:layout_gravity="center_vertical"
                         android:layout_marginStart="16dp"
+                        android:contentDescription="@string/two_player_image_contentdesc"
                         android:src="@drawable/ic_two_people_white_24dp"
-                        android:contentDescription="@string/two_player_image_contentdesc"/>
+                        tools:ignore="ImageContrastCheck" />
 
                 </LinearLayout>
 
             </androidx.cardview.widget.CardView>
 
 
-
-
-            <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/guideline"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                app:layout_constraintGuide_percent=".40" />
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.7" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
