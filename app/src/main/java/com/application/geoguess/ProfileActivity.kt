@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
@@ -14,6 +15,8 @@ import android.widget.TextView
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.android.volley.Request
+import com.android.volley.toolbox.JsonObjectRequest
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.BitmapThumbnailImageViewTarget
 import kotlinx.coroutines.Dispatchers
@@ -30,6 +33,7 @@ class ProfileActivity : AppCompatActivity() {
         val playerName: TextView = findViewById(R.id.profile_name_id)
         val playerIcon: ImageView = findViewById(R.id.profile_icon_id)
         val gamesPlayed: TextView = findViewById(R.id.games_played_id)
+        val totalKilometres: TextView = findViewById(R.id.total_kilometres_id)
         val toolbar: ActionBar? = supportActionBar
         val id: TextView = findViewById(R.id.id_id)
         val email: TextView = findViewById(R.id.email_id)
@@ -60,6 +64,24 @@ class ProfileActivity : AppCompatActivity() {
 
 
             }
+
+            // check server data
+            //lifecycleScope.launch(Dispatchers.IO) {
+
+            val jsonRequest = JsonObjectRequest(Request.Method.GET, StringConstants.SERVER_URL + "/" + hashMap["ID"], null,
+                { response ->
+                    val strResp = response.toString()
+                    Log.d("APIonPROFILE", strResp)
+                    gamesPlayed.text = response.getInt("GamesPlayed").toString()
+                    totalKilometres.text = response.getInt("Kilometres").toString()
+                },
+                { error ->
+                    Log.d("APIonPROFILE", "error => $error")
+                }
+            )
+            MySingleton.getInstance(this).addToRequestQueue(jsonRequest)
+            //}
+
             playerIcon.invalidate()
         }
 

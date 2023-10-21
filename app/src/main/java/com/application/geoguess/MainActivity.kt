@@ -76,21 +76,19 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         val singlePlayerButton: androidx.cardview.widget.CardView =
             findViewById(R.id.single_player_button)
         singlePlayerButton.alpha = 0f
-        singlePlayerButton.setTranslationY(50f);
+        singlePlayerButton.setTranslationY(50f)
         singlePlayerButton.animate().alpha(1f).translationYBy(-50f).setDuration(2000).setStartDelay(1000)
 
 
         val multiPlayerButton: androidx.cardview.widget.CardView =
             findViewById(R.id.multi_player_button)
         multiPlayerButton.alpha = 0f
-        multiPlayerButton.setTranslationY(50f);
+        multiPlayerButton.setTranslationY(50f)
         multiPlayerButton.animate().alpha(1f).translationYBy(-50f).setDuration(2000).setStartDelay(1000)
 
 
         singlePlayerButton.setOnClickListener {
-            val intent = Intent(applicationContext, GameActivity::class.java)
-            intent.putExtra(StringConstants.TYPE_OF_GAME_KEY, StringConstants.ONE_PLAYER_GAME)
-            startActivity(intent)
+            singlePlayerListener()
         }
         multiPlayerButton.setOnClickListener {
             showPlayerNameDialog()
@@ -110,6 +108,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         // the GoogleSignInAccount will be non-null ..
         val account = GoogleSignIn.getLastSignedInAccount(this)
         if (account == null){
+            //show button instead
             viewswitch.reset()
             viewswitch.showNext()
         } else {
@@ -142,6 +141,17 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
             create().show()
         }
+    }
+
+    private fun singlePlayerListener() {
+        val intent = Intent(applicationContext, GameActivity::class.java)
+        intent.putExtra(StringConstants.TYPE_OF_GAME_KEY, StringConstants.ONE_PLAYER_GAME)
+        if (currentUserGoogleID != null) {
+            intent.putExtra("ID_OF_LOGGED", currentUserGoogleID)
+        } else {
+            intent.putExtra("ID_OF_LOGGED", "null")
+        }
+        startActivity(intent)
     }
 
     @Suppress("DEPRECATION")

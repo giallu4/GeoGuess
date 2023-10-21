@@ -86,9 +86,7 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.3.0")
     implementation("com.github.bumptech.glide:glide:4.16.0")
 
-
-
-
+    implementation("com.android.volley:volley:1.2.1")
 
 
 }

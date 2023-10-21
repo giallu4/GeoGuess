@@ -6,4 +6,5 @@ object StringConstants {
     const val TYPE_OF_GAME_KEY = "TYPE_OF_GAME_KEY"
     const val PLAYER_ONE_NAME_KEY = "PLAYER_ONE_NAME_KEY"
     const val PLAYER_TWO_NAME_KEY = "PLAYER_TWO_NAME_KEY"
+    const val SERVER_URL = "https://giallu4.eu.pythonanywhere.com/users"
 }

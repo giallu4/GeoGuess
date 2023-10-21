@@ -3,7 +3,6 @@ package com.application.geoguess
 
 
 import android.Manifest
-import com.application.geoguess.R
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
@@ -25,6 +24,9 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import com.android.volley.Request
+import com.android.volley.toolbox.JsonObjectRequest
 import com.application.geoguess.model.City
 import com.application.geoguess.model.Player
 import com.google.android.gms.common.ConnectionResult
@@ -48,18 +50,19 @@ import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.maps.Style
-import com.mapbox.mapboxsdk.plugins.annotation.Symbol
-import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
-import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
 import com.mapbox.mapboxsdk.plugins.annotation.Line
 import com.mapbox.mapboxsdk.plugins.annotation.LineManager
 import com.mapbox.mapboxsdk.plugins.annotation.LineOptions
+import com.mapbox.mapboxsdk.plugins.annotation.Symbol
+import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
+import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
 import com.mapbox.turf.TurfMeasurement
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import java.nio.charset.Charset
 import java.util.Locale.getDefault
 import java.util.Random
@@ -84,6 +87,8 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
     private var playerTwo: Player? = null
     private var distanceBooleanFeature: Boolean = false
     private lateinit var listOfCityFeatures: List<Feature>
+    private var gamePlayed = 0
+    private var kilometres = 0
     private var textViewFlashingAnimation: Animation = AlphaAnimation(0.0f, 1.0f).apply {
         duration = 500
         startOffset = 1
@@ -218,6 +223,7 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         val checkAnswerButton: com.google.android.material.floatingactionbutton.FloatingActionButton = findViewById(R.id.check_answer_button)
         checkAnswerButton.setOnClickListener {
             if (isSinglePlayerGame) {
+                gamePlayed += 1
                Snackbar.make(findViewById(android.R.id.content),
                         resources.getString(R.string.player_guess_distance,
                                 getDistanceBetweenTargetAndGuess(playerOne), currentCityToGuess?.name),
@@ -254,12 +260,16 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
             // Wait before launching second Snack-bar/Line/info's
             CoroutineScope(context = Dispatchers.Main + Job()).launch {
                 val coordinatesOfHome = LatLng(userLocation)
+                val distance =  getDistanceBetweenHomeAndGuess(playerOne)
                 delay(7000) //wait
                 val snackBar = Snackbar.make(findViewById(android.R.id.content),
                     resources.getString(R.string.home_distance_from_city,
-                        getDistanceBetweenHomeAndGuess(playerOne)),
+                        distance),
                     Snackbar.LENGTH_INDEFINITE)
                 snackBar.show()
+
+                val split = distance.split(".")[0]
+                kilometres += NumberFormat.getNumberInstance(java.util.Locale.US).parse(split).toInt()
 
                 lineManager.delete(line)
                 drawLine(playerOne.selectedLatLng!!,coordinatesOfHome)
@@ -389,6 +399,7 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
 
      //Retrieve and set a new city as the target city to guess.
 
+    @SuppressLint("SetTextI18n")
     private fun setNewRandomCityToGuess() {
         val locationToGuess: TextView = findViewById(R.id.location_to_guess_textview)
         if (listOfCityFeatures.isNotEmpty()) {
@@ -402,7 +413,7 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
             // wait for animations + user reading of the snack-bars results
             CoroutineScope(context = Dispatchers.Default + Job()).launch {
                 delay(8000)
-                runOnUiThread(Runnable {
+                runOnUiThread(Runnable{
                     locationToGuess.text = resources.getString(
                         R.string.location_to_guess,
                         currentCityToGuess!!.name
@@ -579,6 +590,38 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         val mapView: com.mapbox.mapboxsdk.maps.MapView = findViewById(R.id.mapView_textID)
         mapboxMap?.removeOnMapClickListener(this)
         mapView.onDestroy()
+
+        //Handle app user info update on closure with one last coroutine
+
+        val extractedId = intent?.getStringExtra("ID_OF_LOGGED")
+        if (isSinglePlayerGame && extractedId != "null"){
+            //lifecycleScope.launch(Dispatchers.IO) {
+                val jsonParams = JSONObject()
+
+                //JSONfy
+                jsonParams.put("GamesPlayed", gamePlayed)
+                jsonParams.put("Kilometres", kilometres)
+
+                val jsonRequest =
+                     JsonObjectRequest(
+                        Request.Method.POST, "${StringConstants.SERVER_URL}/$extractedId", jsonParams,
+                         { response ->
+                             // response
+                             val strResp = response.toString()
+                             Log.d("API", strResp)
+                         },
+                         { error ->
+                             Log.d("API", "error => $error")
+                             Log.d("API", error.stackTraceToString())
+                         }
+                    )
+                MySingleton.getInstance(this).addToRequestQueue(jsonRequest)
+                gamePlayed = 0
+                kilometres = 0
+                //}
+            }
+
+
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
