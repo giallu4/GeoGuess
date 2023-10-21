@@ -25,7 +25,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.application.geoguess.model.City
 import com.application.geoguess.model.Player
@@ -62,6 +61,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.json.JSONException
 import org.json.JSONObject
 import java.nio.charset.Charset
 import java.util.Locale.getDefault
@@ -87,8 +87,8 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
     private var playerTwo: Player? = null
     private var distanceBooleanFeature: Boolean = false
     private lateinit var listOfCityFeatures: List<Feature>
-    private var gamePlayed = 0
-    private var kilometres = 0
+    private var gamePlayed:Int = 0
+    private var kilometres:Float = 0f
     private var textViewFlashingAnimation: Animation = AlphaAnimation(0.0f, 1.0f).apply {
         duration = 500
         startOffset = 1
@@ -256,7 +256,7 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         setBullsEyeMarker(currentCityToGuess?.latLng!!)
         setCameraBoundsToSelectedAndTargetMarkers()
 
-        if (isSinglePlayerGame){
+        if (isSinglePlayerGame && userIconSymbol != null){
             // Wait before launching second Snack-bar/Line/info's
             CoroutineScope(context = Dispatchers.Main + Job()).launch {
                 val coordinatesOfHome = LatLng(userLocation)
@@ -596,28 +596,39 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         val extractedId = intent?.getStringExtra("ID_OF_LOGGED")
         if (isSinglePlayerGame && extractedId != "null"){
             //lifecycleScope.launch(Dispatchers.IO) {
-                val jsonParams = JSONObject()
 
+            val jsonParams = JSONObject()
+            try {
                 //JSONfy
                 jsonParams.put("GamesPlayed", gamePlayed)
                 jsonParams.put("Kilometres", kilometres)
+                Log.d("APIJSON", jsonParams.toString())
+            } catch (e: JSONException) {
+                Log.d("API", e.stackTraceToString())
+            }
 
                 val jsonRequest =
-                     JsonObjectRequest(
-                        Request.Method.POST, "${StringConstants.SERVER_URL}/$extractedId", jsonParams,
+                     object: JsonObjectRequest(
+                        Method.POST, "${StringConstants.SERVER_URL}/$extractedId", jsonParams,
                          { response ->
                              // response
                              val strResp = response.toString()
-                             Log.d("API", strResp)
+                             Log.d("APIResponse", "The server updated user with:" + strResp)
                          },
                          { error ->
                              Log.d("API", "error => $error")
                              Log.d("API", error.stackTraceToString())
                          }
-                    )
+                    ){
+                         override fun getHeaders(): MutableMap<String, String> {
+                             val headers = HashMap<String, String>()
+                             headers["Content-Type"] = "application/json"
+                             return headers
+                         }
+                     }
                 MySingleton.getInstance(this).addToRequestQueue(jsonRequest)
                 gamePlayed = 0
-                kilometres = 0
+                kilometres = 0f
                 //}
             }
 
@@ -646,8 +657,12 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         private const val TAG = "GameActivity"
     }
 
-    @SuppressLint("MissingPermission")
     override fun onSuccess(p0: LocationEngineResult?) {
+        if (ContextCompat.checkSelfPermission(
+                applicationContext,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             userLocation = p0?.lastLocation
 
             if (userIconSymbol == null) {
@@ -660,19 +675,19 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
                 )
             }
 
-        val text = "Now I know where you are! " + ("\ud83d\ude0e")
-        val centeredText: Spannable = SpannableString(text)
-        centeredText.setSpan(
-            AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER),
-            0, text.length - 1,
-            Spannable.SPAN_INCLUSIVE_INCLUSIVE
-        )
-        Toast.makeText(applicationContext, centeredText, Toast.LENGTH_LONG).show()
+            val text = "Now I know where you are! " + ("\ud83d\ude0e")
+            val centeredText: Spannable = SpannableString(text)
+            centeredText.setSpan(
+                AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER),
+                0, text.length - 1,
+                Spannable.SPAN_INCLUSIVE_INCLUSIVE
+            )
+            Toast.makeText(applicationContext, centeredText, Toast.LENGTH_LONG).show()
 
-        engine?.removeLocationUpdates(this)
-        locComponent!!.setLocationComponentEnabled(false)
+            engine?.removeLocationUpdates(this)
+            locComponent!!.setLocationComponentEnabled(false)
+        }
     }
-
     override fun onFailure(p0: java.lang.Exception) {
         Log.d("ErrorLocation", "Error on retrieving the position")
     }

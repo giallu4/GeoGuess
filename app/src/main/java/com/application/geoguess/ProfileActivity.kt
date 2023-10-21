@@ -42,7 +42,8 @@ class ProfileActivity : AppCompatActivity() {
 
         toolbar?.setDisplayHomeAsUpEnabled(true)
 
-        if (playerName.text == "nome cognome") {
+        //if (playerName.text == "nome cognome") {
+
             lifecycleScope.launch(Dispatchers.IO) {
                 val userFile = File(applicationContext.filesDir, "logged_user_info")
                 prop.load(userFile.inputStream())
@@ -62,29 +63,25 @@ class ProfileActivity : AppCompatActivity() {
                     .centerCrop()
                     .into(BitmapThumbnailImageViewTarget(playerIcon))
 
+                // check server data
+
+                val jsonRequest = JsonObjectRequest(Request.Method.GET, StringConstants.SERVER_URL + "/" + hashMap["ID"], null,
+                    { response ->
+                        val strResp = response.toString()
+                        Log.d("APIonPROFILE", strResp)
+                        gamesPlayed.text = response.getInt("GamesPlayed").toString()
+                        totalKilometres.text = response.getInt("Kilometres").toString()
+                    },
+                    { error ->
+                        Log.d("APIonPROFILE", "error => $error")
+                    }
+                )
+                MySingleton.getInstance(applicationContext).addToRequestQueue(jsonRequest)
 
             }
 
-            // check server data
-            //lifecycleScope.launch(Dispatchers.IO) {
-
-            val jsonRequest = JsonObjectRequest(Request.Method.GET, StringConstants.SERVER_URL + "/" + hashMap["ID"], null,
-                { response ->
-                    val strResp = response.toString()
-                    Log.d("APIonPROFILE", strResp)
-                    gamesPlayed.text = response.getInt("GamesPlayed").toString()
-                    totalKilometres.text = response.getInt("Kilometres").toString()
-                },
-                { error ->
-                    Log.d("APIonPROFILE", "error => $error")
-                }
-            )
-            MySingleton.getInstance(this).addToRequestQueue(jsonRequest)
-            //}
-
             playerIcon.invalidate()
-        }
-
+        //}
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
