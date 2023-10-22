@@ -96,14 +96,16 @@
     </androidx.cardview.widget.CardView>
 
             <TextView
-                android:id="@+id/textView2"
+                android:id="@+id/subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="200dp"
                 android:gravity="center_horizontal"
                 android:text="@string/game_description"
-                android:textSize="25sp"
+                android:textStyle="bold|italic"
+                android:textSize="27sp"
+                android:textColor="#074741"
                 app:layout_constraintBottom_toTopOf="@+id/guideline"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />

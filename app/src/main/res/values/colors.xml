@@ -20,5 +20,6 @@
     <color name="black_overlay">#66000000</color>
     <color name="action_bar_main">#0499BB</color>
     <color name="red">#DF1609</color>
+    <color name="subtitle">#DF1609</color>
 
 </resources>

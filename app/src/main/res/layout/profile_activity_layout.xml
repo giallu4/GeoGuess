@@ -120,14 +120,16 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginVertical="17sp"
+                        android:gravity="center"
                         android:text="@string/game_won_label"
                         android:textSize="20sp"></TextView>
 
                     <TextView
+                        android:id="@+id/single_wins"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/game_won_number"
+                        android:paddingTop="10dp"
                         android:textColor="@color/startblue"
                         android:textSize="20sp"
                         android:textStyle="bold"
@@ -238,7 +240,7 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:importantForAccessibility="no"
-                android:src="@drawable/mail_icon"
+                android:src="@drawable/phone_icon"
                 tools:ignore="ImageContrastCheck" />
 
             <TextView
@@ -247,7 +249,7 @@
                 android:layout_gravity="center_vertical"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp"
-                android:text="gianluca.pulicati@gmail.com"
+                android:text="@string/phone_number"
                 android:textSize="18sp"
                 android:textStyle="bold"></TextView>
         </LinearLayout>
@@ -263,6 +265,7 @@
         android:paddingBottom="30dp">
 
         <Button
+            android:id="@+id/log_out"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/logout_button_style"

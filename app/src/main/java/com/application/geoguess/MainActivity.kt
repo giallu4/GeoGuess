@@ -47,6 +47,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private var currentUserGooglePhoto:Uri? = null
     private var currentUserGooglePhotoBitmap:Bitmap? = null
 
+    @Suppress("DEPRECATION")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity_layout)
@@ -57,16 +58,16 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         val toProfileButton:TextView = findViewById(R.id.user_name)
         toProfileButton.setOnClickListener {
             val intent = Intent(applicationContext, ProfileActivity::class.java)
-            startActivity(intent)
+            startActivityForResult(intent, 9999)
         }
 
         val toProfileButtonTwo:ImageView = findViewById((R.id.user_icon))
         toProfileButtonTwo.setOnClickListener {
             val intent = Intent(applicationContext, ProfileActivity::class.java)
-            startActivity(intent)
+            startActivityForResult(intent, 9999)
         }
 
-        // animate the logo
+        // animate the logo/subtitles/buttons
         val appLogo:ImageView = findViewById(R.id.main_logo)
         val slideDownAnim: Animation = AnimationUtils.loadAnimation(applicationContext, R.anim.slidedown)
         slideDownAnim.startOffset = 1000
@@ -86,6 +87,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         multiPlayerButton.setTranslationY(50f)
         multiPlayerButton.animate().alpha(1f).translationYBy(-50f).setDuration(2000).setStartDelay(1000)
 
+        val subtitle:TextView = findViewById(R.id.subtitle)
+        subtitle.alpha = 0f
+        subtitle.animate().alpha(1f).setDuration(2500).setStartDelay(2000)
+
+
 
         singlePlayerButton.setOnClickListener {
             singlePlayerListener()
@@ -101,7 +107,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         viewswitch.reset()
         viewswitch.showNext()
 
-        gsc = GoogleSignIn.getClient(this, gso)
+        gsc = GoogleSignIn.getClient(this, gso) // base-context vs
+        //gsc = GoogleSignIn.getClient(applicationContext, gso) // application-context
 
 
         // Check for existing Google Sign In account, if the user is already signed in
@@ -170,6 +177,38 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 handleSignInResult(task)
             }
 
+        } else if (requestCode == 9999) {
+            if (data?.getStringExtra("Logout") == "True") {
+
+                val viewswitch:ViewSwitcher = findViewById(R.id.viewswitcher)
+
+                gsc.signOut()
+                gsc.revokeAccess()
+
+                // reset everything
+
+                currentUserGoogleMail = null
+                currentUserGoogleName = null
+                currentUserGoogleSurname = null
+                currentUserGoogleID = null
+                currentUserGooglePhoto = null
+
+                // reset switcher
+
+                viewswitch.reset()
+                viewswitch.showNext()
+
+
+                // Confirmation Toast
+                val text = "User successfully logged out"
+                val centeredText: Spannable = SpannableString(text)
+                centeredText.setSpan(
+                    AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER),
+                    0, text.length - 1,
+                    Spannable.SPAN_INCLUSIVE_INCLUSIVE
+                )
+                Toast.makeText(applicationContext, centeredText, Toast.LENGTH_LONG).show()
+            }
         }
     }
 

@@ -89,6 +89,7 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
     private lateinit var listOfCityFeatures: List<Feature>
     private var gamePlayed:Int = 0
     private var kilometres:Float = 0f
+    private var singleWins:Int = 0
     private var textViewFlashingAnimation: Animation = AlphaAnimation(0.0f, 1.0f).apply {
         duration = 500
         startOffset = 1
@@ -127,49 +128,51 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
             displayPlayersPoints()
         }
 
-        // Check Google Play Location service on device & request localization permission
-        val api = GoogleApiAvailability.getInstance()
-        when (val apiCode = api.isGooglePlayServicesAvailable(applicationContext)) {
-            ConnectionResult.SUCCESS -> {
-                val locationPermissionRequest = registerForActivityResult(
-                    ActivityResultContracts.RequestMultiplePermissions()
-                ) { permissions ->
-                    when {
-                        permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
-                            // Precise location access granted.
-                            distanceBooleanFeature = true
+        if (isSinglePlayerGame) {
+            // Check Google Play Location service on device & request localization permission
+            val api = GoogleApiAvailability.getInstance()
+            when (val apiCode = api.isGooglePlayServicesAvailable(applicationContext)) {
+                ConnectionResult.SUCCESS -> {
+                    val locationPermissionRequest = registerForActivityResult(
+                        ActivityResultContracts.RequestMultiplePermissions()
+                    ) { permissions ->
+                        when {
+                            permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
+                                // Precise location access granted.
+                                distanceBooleanFeature = true
+                            }
+                            permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+                                // Only approximate location access granted.
+                                distanceBooleanFeature = true
+                            } else -> {
+                            // No location access granted.
+                            val text = "Permission Denied: some features won't work as intended!"
+                            val centeredText: Spannable = SpannableString(text)
+                            centeredText.setSpan(
+                                AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER),
+                                0, text.length - 1,
+                                Spannable.SPAN_INCLUSIVE_INCLUSIVE
+                            )
+                            Toast.makeText(applicationContext, centeredText, Toast.LENGTH_LONG).show()
                         }
-                        permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
-                            // Only approximate location access granted.
-                            distanceBooleanFeature = true
-                        } else -> {
-                        // No location access granted.
-                        val text = "Permission Denied: some features won't work as intended!"
-                        val centeredText: Spannable = SpannableString(text)
-                        centeredText.setSpan(
-                            AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER),
-                            0, text.length - 1,
-                            Spannable.SPAN_INCLUSIVE_INCLUSIVE
-                        )
-                        Toast.makeText(applicationContext, centeredText, Toast.LENGTH_LONG).show()
                         }
                     }
-                }
 
-                if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_DENIED) {
-                    locationPermissionRequest.launch(arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION))
-                } else {
-                    distanceBooleanFeature = true
-                }
+                    if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_DENIED) {
+                        locationPermissionRequest.launch(arrayOf(
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION))
+                    } else {
+                        distanceBooleanFeature = true
+                    }
 
-            }
-            ConnectionResult.SERVICE_MISSING, ConnectionResult.SERVICE_UPDATING, ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED, ConnectionResult.SERVICE_DISABLED -> {
-                api.getErrorDialog(this, apiCode, 100)?.show()
-            }
-            else -> {
-                Toast.makeText(applicationContext, "There is an error with Google API", Toast.LENGTH_LONG).show()
+                }
+                ConnectionResult.SERVICE_MISSING, ConnectionResult.SERVICE_UPDATING, ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED, ConnectionResult.SERVICE_DISABLED -> {
+                    api.getErrorDialog(this, apiCode, 100)?.show()
+                }
+                else -> {
+                    Toast.makeText(applicationContext, "There is an error with Google API", Toast.LENGTH_LONG).show()
+                }
             }
         }
 
@@ -224,11 +227,21 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         checkAnswerButton.setOnClickListener {
             if (isSinglePlayerGame) {
                 gamePlayed += 1
-               Snackbar.make(findViewById(android.R.id.content),
-                        resources.getString(R.string.player_guess_distance,
-                                getDistanceBetweenTargetAndGuess(playerOne), currentCityToGuess?.name),
+                val distanceForWin = getDistanceBetweenTargetAndGuess(playerOne)
+                if (distanceForWin.split(",").size == 1){
+                    singleWins += 1
+                    Snackbar.make(findViewById(android.R.id.content),
+                        resources.getString(R.string.player_guess_distance_won,
+                            getDistanceBetweenTargetAndGuess(playerOne), currentCityToGuess?.name),
                         Snackbar.LENGTH_INDEFINITE).show()
-                drawLine(playerOne.selectedLatLng!!, currentCityToGuess!!.latLng!!)
+                    drawLine(playerOne.selectedLatLng!!, currentCityToGuess!!.latLng!!)
+                } else {
+                    Snackbar.make(findViewById(android.R.id.content),
+                        resources.getString(R.string.player_guess_distance_loss,
+                            getDistanceBetweenTargetAndGuess(playerOne), currentCityToGuess?.name),
+                        Snackbar.LENGTH_INDEFINITE).show()
+                    drawLine(playerOne.selectedLatLng!!, currentCityToGuess!!.latLng!!)
+                }
 
 
                 resetUiAfterAnswerDistanceCheck()
@@ -602,7 +615,8 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
                 //JSONfy
                 jsonParams.put("GamesPlayed", gamePlayed)
                 jsonParams.put("Kilometres", kilometres)
-                Log.d("APIJSON", jsonParams.toString())
+                jsonParams.put("Wins", singleWins)
+                Log.d("API-JSON", jsonParams.toString())
             } catch (e: JSONException) {
                 Log.d("API", e.stackTraceToString())
             }
@@ -629,6 +643,7 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
                 MySingleton.getInstance(this).addToRequestQueue(jsonRequest)
                 gamePlayed = 0
                 kilometres = 0f
+                singleWins = 0
                 //}
             }
 
