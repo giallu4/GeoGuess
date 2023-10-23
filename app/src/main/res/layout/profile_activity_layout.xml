@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_weight="1"
+    android:orientation="vertical"
+    android:fillViewport="true">
+
+<LinearLayout xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     tools:context=".ProfileActivity"
     android:background="@color/graylight"
     android:orientation="vertical">
@@ -171,7 +177,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_gravity="center"
-        android:layout_marginTop="60dp">
+        android:layout_marginTop="20dp">
         <LinearLayout
             android:orientation="horizontal"
             android:paddingLeft="25dp"
@@ -254,25 +260,20 @@
                 android:textStyle="bold"></TextView>
         </LinearLayout>
 
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:orientation="vertical"
-        android:layout_gravity="bottom"
-        android:gravity="bottom|center_horizontal"
-        android:paddingBottom="30dp">
-
         <Button
             android:id="@+id/log_out"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center|bottom"
             android:background="@drawable/logout_button_style"
             android:text="@string/logout_text"
             android:textColor="#fff"
+            android:layout_marginTop="25dp"
             tools:ignore="TextContrastCheck" />
+
     </LinearLayout>
 
+
 </LinearLayout>
+</ScrollView>
 

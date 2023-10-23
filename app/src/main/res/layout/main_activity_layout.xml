@@ -61,7 +61,7 @@
                 android:clickable="true"
                 android:soundEffectsEnabled="false"
                 android:textColor="#FF9800"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:focusable="true" />
 
         </LinearLayout>
@@ -100,7 +100,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="200dp"
+                android:layout_marginBottom="130dp"
                 android:gravity="center_horizontal"
                 android:text="@string/game_description"
                 android:textStyle="bold|italic"

@@ -124,6 +124,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             currentUserGoogleSurname = account.familyName
             currentUserGoogleID = account.id
             currentUserGooglePhoto = account.photoUrl
+            viewswitch.reset()
+            viewswitch.showNext()
             updateLoginUI()
         }
     }

@@ -228,7 +228,7 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
             if (isSinglePlayerGame) {
                 gamePlayed += 1
                 val distanceForWin = getDistanceBetweenTargetAndGuess(playerOne)
-                if (distanceForWin.split(",").size == 1){
+                if (distanceForWin.split(".").size == 1){
                     singleWins += 1
                     Snackbar.make(findViewById(android.R.id.content),
                         resources.getString(R.string.player_guess_distance_won,

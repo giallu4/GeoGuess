@@ -3,9 +3,12 @@ package com.application.geoguess
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
@@ -26,10 +29,14 @@ import com.bumptech.glide.request.target.BitmapThumbnailImageViewTarget
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
+import java.io.FileOutputStream
 import java.util.Properties
 
 
 class ProfileActivity : AppCompatActivity(), View.OnClickListener {
+    private var imageBitmap: Bitmap? = null
+
+    @Suppress("DEPRECATION")
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,10 +52,16 @@ class ProfileActivity : AppCompatActivity(), View.OnClickListener {
         val hashMap = hashMapOf<String, String?>()
         val prop = Properties()
         val logOut:Button = findViewById(R.id.log_out)
+        val file = File(applicationContext.filesDir, "new_profile_icon")
 
         toolbar?.setDisplayHomeAsUpEnabled(true)
 
         logOut.setOnClickListener(this)
+
+        playerIcon.setOnClickListener {
+            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            startActivityForResult(intent, 1337)
+        }
 
         //if (playerName.text == "nome cognome") {
 
@@ -64,12 +77,17 @@ class ProfileActivity : AppCompatActivity(), View.OnClickListener {
                 id.setText(hashMap["ID"])
                 email.setText(hashMap["Mail"])
 
-                val url: Uri = Uri.parse(hashMap["Url"])
-                Glide.with(baseContext)
-                    .asBitmap()
-                    .load(url)
-                    .centerCrop()
-                    .into(BitmapThumbnailImageViewTarget(playerIcon))
+                if (!file.exists()) {
+                    val url: Uri = Uri.parse(hashMap["Url"])
+                    Glide.with(baseContext)
+                        .asBitmap()
+                        .load(url)
+                        .centerCrop()
+                        .into(BitmapThumbnailImageViewTarget(playerIcon))
+                } else {
+                    imageBitmap = BitmapFactory.decodeFile(userFile.absolutePath)
+                    playerIcon.setImageBitmap(imageBitmap)
+                }
 
                 // check server data
 
@@ -92,6 +110,28 @@ class ProfileActivity : AppCompatActivity(), View.OnClickListener {
             playerIcon.invalidate()
         //}
     }
+
+    @Deprecated("Deprecated in Java")
+    @Suppress("DEPRECATION")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 1337 && resultCode == RESULT_OK) {
+            val file = File(applicationContext.filesDir, "new_profile_icon")
+            imageBitmap = data?.extras?.get("data") as Bitmap
+            val playerIcon: ImageView = findViewById(R.id.profile_icon_id)
+            playerIcon.setImageBitmap(imageBitmap)
+
+            //save the picture
+            //lifecycleScope.launch(Dispatchers.IO) {
+                val outputStream = FileOutputStream(file)
+                imageBitmap!!.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+                outputStream.flush()
+                outputStream.close()
+            //}
+        }
+    }
+
+
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.profile_menu, menu)
