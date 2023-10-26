@@ -1,15 +1,21 @@
 package com.application.geoguess
 
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
+import android.text.Layout
+import android.text.Spannable
 import android.text.SpannableString
+import android.text.style.AlignmentSpan
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.Menu
@@ -18,8 +24,11 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
@@ -29,14 +38,13 @@ import com.bumptech.glide.request.target.BitmapThumbnailImageViewTarget
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
-import java.io.FileOutputStream
+import java.io.IOException
 import java.util.Properties
 
 
 class ProfileActivity : AppCompatActivity(), View.OnClickListener {
     private var imageBitmap: Bitmap? = null
 
-    @Suppress("DEPRECATION")
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,15 +60,25 @@ class ProfileActivity : AppCompatActivity(), View.OnClickListener {
         val hashMap = hashMapOf<String, String?>()
         val prop = Properties()
         val logOut:Button = findViewById(R.id.log_out)
-        val file = File(applicationContext.filesDir, "new_profile_icon")
 
         toolbar?.setDisplayHomeAsUpEnabled(true)
 
         logOut.setOnClickListener(this)
 
         playerIcon.setOnClickListener {
-            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            startActivityForResult(intent, 1337)
+            if (ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 1337)
+
+            } else if (ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED){
+                // create the image file
+
+                try {
+                    val ifFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "logged_user_new_avatar.jpg")
+                    dispatchTakePictureIntent(ifFile)
+                } catch (ex: IOException) {
+                    Log.d("FilerError", "Error on creating the file ...")
+                }
+            }
         }
 
         //if (playerName.text == "nome cognome") {
@@ -77,7 +95,8 @@ class ProfileActivity : AppCompatActivity(), View.OnClickListener {
                 id.setText(hashMap["ID"])
                 email.setText(hashMap["Mail"])
 
-                if (!file.exists()) {
+                val ifFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "logged_user_new_avatar.jpg")
+                if (!ifFile.exists()) {
                     val url: Uri = Uri.parse(hashMap["Url"])
                     Glide.with(baseContext)
                         .asBitmap()
@@ -85,8 +104,10 @@ class ProfileActivity : AppCompatActivity(), View.OnClickListener {
                         .centerCrop()
                         .into(BitmapThumbnailImageViewTarget(playerIcon))
                 } else {
-                    imageBitmap = BitmapFactory.decodeFile(userFile.absolutePath)
-                    playerIcon.setImageBitmap(imageBitmap)
+                    runOnUiThread(Runnable {
+                        imageBitmap = BitmapFactory.decodeFile(ifFile.absolutePath)
+                        playerIcon.setImageBitmap(imageBitmap)
+                    })
                 }
 
                 // check server data
@@ -111,25 +132,75 @@ class ProfileActivity : AppCompatActivity(), View.OnClickListener {
         //}
     }
 
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == 1337 && ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            // create the image file
+            try {
+                val ifFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "logged_user_new_avatar.jpg")
+                dispatchTakePictureIntent(ifFile)
+            } catch (ex: IOException) {
+                Log.d("FilerError", "Error on creating the file ...")
+            }
+        } else {
+            val text = "You need to grant the permission to use the Camera to change your avatar!"
+            val centeredText: Spannable = SpannableString(text)
+            centeredText.setSpan(
+                AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER),
+                0, text.length - 1,
+                Spannable.SPAN_INCLUSIVE_INCLUSIVE
+            )
+            Toast.makeText(applicationContext, centeredText, Toast.LENGTH_LONG).show()
+        }
+
+
+    }
+
+
     @Deprecated("Deprecated in Java")
     @Suppress("DEPRECATION")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 1337 && resultCode == RESULT_OK) {
-            val file = File(applicationContext.filesDir, "new_profile_icon")
-            imageBitmap = data?.extras?.get("data") as Bitmap
-            val playerIcon: ImageView = findViewById(R.id.profile_icon_id)
-            playerIcon.setImageBitmap(imageBitmap)
 
-            //save the picture
-            //lifecycleScope.launch(Dispatchers.IO) {
-                val outputStream = FileOutputStream(file)
-                imageBitmap!!.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
-                outputStream.flush()
-                outputStream.close()
-            //}
+        if (requestCode == 1380 && resultCode == RESULT_OK) {
+            Log.d("ReturnIntent", "The picture was success")
+            val ifFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "logged_user_new_avatar.jpg")
+            Log.d("File-Path", ifFile.absolutePath)
+            val playerIcon: ImageView = findViewById(R.id.profile_icon_id)
+            imageBitmap = BitmapFactory.decodeFile(ifFile.absolutePath)
+            playerIcon.setImageBitmap(imageBitmap)
         }
     }
+
+
+
+    @Suppress("DEPRECATION")
+    private fun dispatchTakePictureIntent(file:File) {
+        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
+            // Ensure that there's a camera activity to handle the intent
+            takePictureIntent.resolveActivity(packageManager)?.also {
+                // Continue only if the File was successfully created
+                file.also {
+                    val photoURI: Uri = FileProvider.getUriForFile(
+                        this,
+                        "com.application.geoguess.fileprovider",
+                        it
+                    )
+
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+                    startActivityForResult(takePictureIntent, 1380)
+                }
+            }
+        }
+    }
+
+
 
 
 

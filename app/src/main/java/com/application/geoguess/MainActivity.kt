@@ -3,10 +3,12 @@ package com.application.geoguess
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Paint
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.text.Layout
 import android.text.Spannable
 import android.text.SpannableString
@@ -256,21 +258,28 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         val userName:TextView = findViewById(R.id.user_name)
 
         viewswitch.showNext()
-        Glide.with(this)
-            .asBitmap()
-            .load(currentUserGooglePhoto)
-            .diskCacheStrategy(DiskCacheStrategy.ALL)
-            .into(object : CustomTarget<Bitmap?>() {
-                override fun onResourceReady(
-                    resource: Bitmap,
-                    transition: Transition<in Bitmap?>?
-                ) {
-                    currentUserGooglePhotoBitmap = resource
-                    userAvatar.setImageBitmap(currentUserGooglePhotoBitmap)
-                }
+        val ifFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "logged_user_new_avatar.jpg")
+        if (!ifFile.exists()) {
+            Glide.with(this)
+                .asBitmap()
+                .load(currentUserGooglePhoto)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(object : CustomTarget<Bitmap?>() {
+                    override fun onResourceReady(
+                        resource: Bitmap,
+                        transition: Transition<in Bitmap?>?
+                    ) {
+                        currentUserGooglePhotoBitmap = resource
+                        userAvatar.setImageBitmap(currentUserGooglePhotoBitmap)
+                    }
 
-                override fun onLoadCleared(placeholder: Drawable?) {}
-            })
+                    override fun onLoadCleared(placeholder: Drawable?) {}
+                })
+        } else {
+            userAvatar.setImageBitmap(BitmapFactory.decodeFile(ifFile.absolutePath))
+        }
+
+
 
         if (currentUserGoogleName != null && currentUserGoogleSurname != null){
             userName.setText("Hi! " +currentUserGoogleName+" "+currentUserGoogleSurname)
@@ -295,6 +304,17 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         userName.invalidate()
         userAvatar.invalidate()
+    }
+
+
+    //Override onResume to check if user changed is Profile picture in ProfileActivity
+    public override fun onResume() {
+        super.onResume()
+        val ifFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "logged_user_new_avatar.jpg")
+        val userAvatar:ImageView = findViewById(R.id.user_icon)
+        if (ifFile.exists()) {
+            userAvatar.setImageBitmap(BitmapFactory.decodeFile(ifFile.absolutePath))
+        }
     }
 }
 

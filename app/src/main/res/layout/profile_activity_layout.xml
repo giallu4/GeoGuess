@@ -57,6 +57,9 @@
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
                     android:importantForAccessibility="no"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:soundEffectsEnabled="false"
                     android:src="@drawable/user_default_icon"
                     tools:ignore="ImageContrastCheck"/>
 
@@ -196,7 +199,7 @@
                 android:id="@+id/id_id"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="18sp"
+                android:textSize="15sp"
                 android:layout_gravity="center_vertical"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp"
@@ -223,7 +226,7 @@
             <TextView
                 android:id="@+id/email_id"
                 android:textStyle="bold"
-                android:textSize="18sp"
+                android:textSize="15sp"
                 android:layout_gravity="center_vertical"
                 android:layout_width="310dp"
                 android:layout_height="wrap_content"
@@ -256,7 +259,7 @@
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp"
                 android:text="@string/phone_number"
-                android:textSize="18sp"
+                android:textSize="15sp"
                 android:textStyle="bold"></TextView>
         </LinearLayout>
 
@@ -268,7 +271,7 @@
             android:background="@drawable/logout_button_style"
             android:text="@string/logout_text"
             android:textColor="#fff"
-            android:layout_marginTop="25dp"
+            android:layout_marginTop="20dp"
             tools:ignore="TextContrastCheck" />
 
     </LinearLayout>
